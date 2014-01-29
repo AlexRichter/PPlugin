@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit</title>
+    <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.12.0.css">
+    <meta name="WT.z_offers" content="26.66">
+
+</head>
+<body>
+<script>
+    window.testing = function(){};
+    window.webtrendsAsyncInit=function(){
+        var dcs=new Webtrends.dcs().init({
+            dcsid:"dcs2oyb25100008ax6ycgo5ic_2f5t",
+            domain:"statse.webtrendslive.com",
+            timezone:1,
+            i18n:true,
+            plugins:{
+                visitorlog:{src:'visitorLog.js'}
+            }
+        });
+        dcs.track();
+    };
+</script>
+<script src="webtrends_test_harness.js"></script>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="http://code.jquery.com/qunit/qunit-1.12.0.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script>
+    getParams = function(a) {
+        a = a.split('&');
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i)
+        {
+            var p=a[i].split('=');
+            if (p.length != 2) continue;
+            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+    };
+
+    changeDCS = function(name, value) {
+        Webtrends.dcss.dcsobj_0.DCS[name] = value;
+    };
+
+    setDate = function(date, url){
+        stored = JSON.parse(localStorage.wt_visitorLog);
+        stored[url] = date;
+        localStorage.wt_visitorLog = JSON.stringify(stored);
+    }
+
+    asyncTest("Never visted before test - should fire all", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test/', 'DCSuri correct');
+            equal(p['dcsuri_d'], '1', 'Day fired');
+            equal(p['dcsuri_w'], '1', 'Week fired');
+            equal(p['dcsuri_m'], '1', 'Month fired');
+            equal(p['dcsuri_y'], '1', 'Year fired');
+            start();
+        };
+        localStorage.removeItem("wt_visitorLog");        
+        changeDCS('dcsuri', '/test/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Visited today, fire none", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test/', 'DCSuri correct');
+            equal(typeof p['dcsuri_d'], 'undefined', 'Day not fired');
+            equal(typeof p['dcsuri_w'], 'undefined', 'Week not fired');
+            equal(typeof p['dcsuri_m'], 'undefined', 'Month not fired');
+            equal(typeof p['dcsuri_y'], 'undefined', 'Year not fired');
+            start();
+        };
+        setDate(new Date(), "/test/")   
+        changeDCS('dcsuri', '/test/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Visited yesterday, fire day", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test/', 'DCSuri correct');
+            equal(p['dcsuri_d'], '1', 'Day fired');
+            equal(typeof p['dcsuri_w'], 'undefined', 'Week not fired');
+            equal(typeof p['dcsuri_m'], 'undefined', 'Month not fired');
+            equal(typeof p['dcsuri_y'], 'undefined', 'Year not fired');
+            start();
+        };
+        var d = new Date()
+        setDate(d.setDate(d.getDate() - 1), "/test/")   
+        changeDCS('dcsuri', '/test/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Visited last week, fire day and week", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test/', 'DCSuri correct');
+            equal(p['dcsuri_d'], '1', 'Day fired');
+            equal(p['dcsuri_w'], '1', 'Week fired');
+            equal(typeof p['dcsuri_m'], 'undefined', 'Month not fired');
+            equal(typeof p['dcsuri_y'], 'undefined', 'Year not fired');
+            start();
+        };
+        var d = new Date()
+        setDate(d.setDate(d.getDate() - 7), "/test/")   
+        changeDCS('dcsuri', '/test/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Visited last month, fire day, week month", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test/', 'DCSuri correct');
+            equal(p['dcsuri_d'], '1', 'Day fired');
+            equal(p['dcsuri_w'], '1', 'Week fired');
+            equal(p['dcsuri_m'], '1', 'Month fired');
+            equal(typeof p['dcsuri_y'], 'undefined', 'Year not fired');
+            start();
+        };
+        var d = new Date()
+        setDate(d.setDate(d.getDate() - 31), "/test/")   
+        changeDCS('dcsuri', '/test/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Visited last year, fire day, week month year", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test/', 'DCSuri correct');
+            equal(p['dcsuri_d'], '1', 'Day fired');
+            equal(p['dcsuri_w'], '1', 'Week fired');
+            equal(p['dcsuri_m'], '1', 'Month fired');
+            equal(p['dcsuri_y'], '1', 'Year fired');
+            start();
+        };
+        var d = new Date()
+        setDate(d.setDate(d.getDate() - 200), "/test/")   
+        changeDCS('dcsuri', '/test/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Check that we fire first time, don't fire second time (checking that the date saving works)", function(){
+        window.testing = function(input){
+            p = getParams(input);
+            equal(p['dcsuri'], '/test2/', 'DCSuri correct');
+            equal(p['dcsuri_d'], '1', 'Day fired');
+            equal(p['dcsuri_w'], '1', 'Week fired');
+            equal(p['dcsuri_m'], '1', 'Month fired');
+            equal(p['dcsuri_y'], '1', 'Year fired');
+            window.testing = function(input){
+                p = getParams(input);
+                equal(p['dcsuri'], '/test2/', 'DCSuri correct');
+                equal(typeof p['dcsuri_d'], 'undefined', 'Day not fired');
+                equal(typeof p['dcsuri_w'], 'undefined', 'Week not fired');
+                equal(typeof p['dcsuri_m'], 'undefined', 'Month not fired');
+                equal(typeof p['dcsuri_y'], 'undefined', 'Year not fired');
+                changeDCS('dcsuri', '/test/');
+                window.testing = function(input){
+                    p = getParams(input);
+                    equal(p['dcsuri'], '/test/', 'DCSuri correct');
+                    equal(p['dcsuri_d'], '1', 'Day fired');
+                    equal(p['dcsuri_w'], '1', 'Week fired');
+                    equal(p['dcsuri_m'], '1', 'Month fired');
+                    equal(p['dcsuri_y'], '1', 'Year fired');
+                    start();
+                };
+                dcsMultiTrack();
+            };
+            dcsMultiTrack();            
+        };
+        localStorage.removeItem("wt_visitorLog");        
+        changeDCS('dcsuri', '/test2/');
+        dcsMultiTrack();
+    });
+
+    asyncTest("Check date is correct", function(){
+        window.testing = function(input){
+            var r = JSON.parse(localStorage.wt_visitorLog)
+            equal((new Date(r["/test3/"])).toString() , (new Date()).toString(), "Date correct");
+            start();
+        };
+        localStorage.removeItem("wt_visitorLog");        
+        changeDCS('dcsuri', '/test3/');
+        dcsMultiTrack();
+    });
+
+</script>
+</body>
+</html>
